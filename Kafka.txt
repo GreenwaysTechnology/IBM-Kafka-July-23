@@ -438,4 +438,145 @@ https://archive.apache.org/dist/kafka
 
 wget https://downloads.apache.org/kafka/3.5.0/kafka_2.13-3.5.0.tgz
 
+tar -xzf  kafka_2.13-3.5.0.tgz
 
+
+subu@LAPTOP-R2TGGFDL:~/kafka_2.13-3.5.0$ ls -l
+total 64
+-rw-r--r-- 1 subu subu 14770 Jun  5 14:33 LICENSE
+-rw-r--r-- 1 subu subu 28184 Jun  5 14:33 NOTICE
+drwxr-xr-x 3 subu subu  4096 Jun  5 14:38 bin
+drwxr-xr-x 3 subu subu  4096 Jun  5 14:38 config
+drwxr-xr-x 2 subu subu  4096 Jul 18 14:47 libs
+drwxr-xr-x 2 subu subu  4096 Jun  5 14:38 licenses
+drwxr-xr-x 2 subu subu  4096 Jun  5 14:38 site-docs
+
+Folder structures
+libs:
+  contains all jar files neccessary to run kafka.
+bin;
+ contains the shell script files to run kafka servers and all cli
+ contains windows folder.
+
+bin/windows
+  contains the batch files to run kafka in windows env.
+
+config;
+  contains all configuration files related to kafka server,zookeeper.....
+.....................................................................................
+
+			Core concepts of Kafka
+.....................................................................................
+
+Broker:
+.......
+   Since Kafka is a java program which is deployed on JVM,Kafka runs on the JVM Which is process.
+   The JVM is other wise called as "Kafka Broker or Kafka Server"
+
+.....................................................................................
+			 Types of Kafka Broker
+.....................................................................................
+
+Kafka has been designed based on "Distributed Architecture" - By Default Kafka is distributed.
+
+General Characteritics of Disbutributed Architecture:
+.....................................................
+
+1.Scalablity
+    Running more than one process,hosting the same app. Running the same app on    multiple servers.
+
+Cluster:
+  When we scale apps into multiple servers, we need to group them under a single unit.
+  Group of machines are called as "cluster"
+
+2.High Availablity:
+   if any one server fails in the cluster, clients should not be affected, we need to make our app always available.
+   How to make highly available?
+      Via cluster
+
+         In kafka we can run "Multiple Brokers" as a cluter.
+
+  Kafka cluster can be in the same machine or across machines in network.
+.....................................................................................
+			Cluster and Distributed Arch
+.....................................................................................
+
+1.Cluster Manager - Control Plane -  Where cluster information is stored
+2.Data Plane  - Where User data is stored
+
+.....................................................................................
+			   Cluster Manager
+.....................................................................................
+
+In any distributed arch, if machines are running in a cluster or clusters , the cluster need to be mananged.
+
+Who can manage cluster?
+   Cluster Manager.
+
+Kafka and cluster Manager:
+  Kafka is distributed, runs in a cluster, we need to manage that cluster.
+
+Kafka provides cluster manager
+  =>ZooKeeper - It is distributed cluster manager software
+  =>KRaft -  it is new cluster manager inside Kafka cluster.
+
+if you run single broker or multiple brokers we need to have cluster manager.
+
+1.Apache Zookeeper:
+	ZooKeeper is a centralized service for maintaining configuration information, naming, providing distributed synchronization, and providing group services. 
+
+2.Apache KRaft:
+    KRaft is consenus protocal that was introduced to replace ZooKeeper for meta data management
+
+Roles of Cluster Managers:
+1.To manage cluster
+2.Failures detections and recovery
+3.Storing ACL and secrets
+
+
+Lab 2:
+ How to setup Apache Kafka Cluster.
+ 
+Single Broker , Single zookeeper.
+
+Step 1:
+ Start zookeeper
+
+Note: before starting zookeeper or broker we need to pass "respective config files" as parameter 
+
+zookeeper:
+ Has a config file called config/zookeeper.properties
+
+dataDir=/tmp/zookeeper
+    The directory where the snapshot of cluster information is stored.
+
+clientPort=2181
+  The Port at which clients connect , 
+  who is client? Kafka Broker is client.
+
+Any server if you want to start we need to use "script files" which is inside bin folder
+
+$./bin/zookeeper-server-start.sh  config/zookeeper.properties
+
+Step 2:
+  After running zookeeper,we need start broker
+
+in order to start kafka broker we need to supply server.properties file...
+
+broker.id=0
+ Each Broker is identified uniquely in the cluster
+
+log.dirs=/tmp/kafka-logs
+  Location of event log files....
+
+zookeeper.connect=localhost:2181
+  The current broker is connected with zookeeper and its host and port.
+
+kafka_2.13-3.5.0$ ./bin/kafka-server-start.sh config/server.properties
+
+
+
+
+
+
+  
