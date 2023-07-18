@@ -574,6 +574,250 @@ zookeeper.connect=localhost:2181
 
 kafka_2.13-3.5.0$ ./bin/kafka-server-start.sh config/server.properties
 
+Without "cluster manager either zookeeper or kraft" , we cant start broker.
+.....................................................................................
+			      Topics
+.....................................................................................
+What is Topic?
+  There are lot of events, we need to organize them in the system.
+  Apach Kafka's most fundamental unit of organization is the topic.
+
+  Topic is just like tables in the relational database.
+
+  As we discussed already, Kafka just stores in events in the log files.
+
+  We never writes events into log file directly
+
+  As a developer we capture events, write them into "topic",Kafka writes events into    log file from the topic.
+
+  A topic is log of events,logs are easy to understand
+
+  Topic is just simple datastructure with well known semantics, They are append only.
+
+  When ever you write a  message, it always goes on the end
+
+  When you read message from the logs by "Seeking offset in the log"
+
+  Logs are fundamental durable things,Traditional Messaging systems have topics and     queues which store messages temporarily to buffer them between source and      designation.
+
+  Since topics are logs , which always permenant.
+  
+  You can delete log files not log messages.
+
+  You can store logs as short as to as long as years or even retain message     indefinitely.
+
+.....................................................................................
+			How to create topics
+.....................................................................................
+
+In order to create topic, we need somebody to create topic.
+
+
+Actors In kafka Systems:
+........................
+
+1.Producer
+   The Producer is a program whose responsability to capture events,and send events to Kafka broker.
+   Producer will publish events into topic.
+2.Consumer
+ The Consumer is a program whose responsability to read events from the topic
+
+Producer and consumers can be written any programming language which supports kafka integration.
+
+Producers can be java program or node.js program or python or c#
+Consumer can be java program or node.js program or python or c#
+
+Other than programming languages , Kafka supports cli tools.
+
+.....................................................................................
+			 kafka-topics.sh
+....................................................................................
+
+This is a cli tool used to create,delete,describe, or update the topic.
+
+Lab : How to create topic
+
+1.Explore help how to use topics tool
+
+
+./bin/kafka-topics.sh --help
+This tool helps to create, delete, describe, or change a topic.
+Option                                   Description
+------                                   -----------
+--alter                                  Alter the number of partitions and
+                                           replica assignment. Update the
+                                           configuration of an existing topic
+                                           via --alter is no longer supported
+                                           here (the kafka-configs CLI supports
+                                           altering topic configs with a --
+                                           bootstrap-server option).
+--at-min-isr-partitions                  if set when describing topics, only
+                                           show partitions whose isr count is
+                                           equal to the configured minimum.
+--bootstrap-server <String: server to    REQUIRED: The Kafka server to connect
+  connect to>                              to.
+--command-config <String: command        Property file containing configs to be
+  config property file>                    passed to Admin Client. This is used
+                                           only with --bootstrap-server option
+                                           for describing and altering broker
+                                           configs.
+--config <String: name=value>            A topic configuration override for the
+                                           topic being created or altered. The
+                                           following is a list of valid
+                                           configurations:
+                                                cleanup.policy
+                                                compression.type
+                                                delete.retention.ms
+                                                file.delete.delay.ms
+                                                flush.messages
+                                                flush.ms
+                                                follower.replication.throttled.
+                                           replicas
+                                                index.interval.bytes
+                                                leader.replication.throttled.replicas
+                                                local.retention.bytes
+                                                local.retention.ms
+                                                max.compaction.lag.ms
+                                                max.message.bytes
+                                                message.downconversion.enable
+                                                message.format.version
+                                                message.timestamp.difference.max.ms
+                                                message.timestamp.type
+                                                min.cleanable.dirty.ratio
+                                                min.compaction.lag.ms
+                                                min.insync.replicas
+                                                preallocate
+                                                remote.storage.enable
+                                                retention.bytes
+                                                retention.ms
+                                                segment.bytes
+                                                segment.index.bytes
+                                                segment.jitter.ms
+                                                segment.ms
+                                                unclean.leader.election.enable
+                                         See the Kafka documentation for full
+                                           details on the topic configs. It is
+                                           supported only in combination with --
+                                           create if --bootstrap-server option
+                                           is used (the kafka-configs CLI
+                                           supports altering topic configs with
+                                           a --bootstrap-server option).
+--create                                 Create a new topic.
+--delete                                 Delete a topic
+--delete-config <String: name>           A topic configuration override to be
+                                           removed for an existing topic (see
+                                           the list of configurations under the
+                                           --config option). Not supported with
+                                           the --bootstrap-server option.
+--describe                               List details for the given topics.
+--exclude-internal                       exclude internal topics when running
+                                           list or describe command. The
+                                           internal topics will be listed by
+                                           default
+--help                                   Print usage information.
+--if-exists                              if set when altering or deleting or
+                                           describing topics, the action will
+                                           only execute if the topic exists.
+--if-not-exists                          if set when creating topics, the
+                                           action will only execute if the
+                                           topic does not already exist.
+--list                                   List all available topics.
+--partitions <Integer: # of partitions>  The number of partitions for the topic
+                                           being created or altered (WARNING:
+                                           If partitions are increased for a
+                                           topic that has a key, the partition
+                                           logic or ordering of the messages
+                                           will be affected). If not supplied
+                                           for create, defaults to the cluster
+                                           default.
+--replica-assignment <String:            A list of manual partition-to-broker
+  broker_id_for_part1_replica1 :           assignments for the topic being
+  broker_id_for_part1_replica2 ,           created or altered.
+  broker_id_for_part2_replica1 :
+  broker_id_for_part2_replica2 , ...>
+--replication-factor <Integer:           The replication factor for each
+  replication factor>                      partition in the topic being
+                                           created. If not supplied, defaults
+                                           to the cluster default.
+--topic <String: topic>                  The topic to create, alter, describe
+                                           or delete. It also accepts a regular
+                                           expression, except for --create
+                                           option. Put topic name in double
+                                           quotes and use the '\' prefix to
+                                           escape regular expression symbols; e.
+                                           g. "test\.topic".
+--topic-id <String: topic-id>            The topic-id to describe.This is used
+                                           only with --bootstrap-server option
+                                           for describing topics.
+--topics-with-overrides                  if set when describing topics, only
+                                           show topics that have overridden
+                                           configs
+--unavailable-partitions                 if set when describing topics, only
+                                           show partitions whose leader is not
+                                           available
+--under-min-isr-partitions               if set when describing topics, only
+                                           show partitions whose isr count is
+                                           less than the configured minimum.
+--under-replicated-partitions            if set when describing topics, only
+                                           show under replicated partitions
+--version                                Display Kafka version.
+
+
+
+Create new Topic:
+
+~/kafka_2.13-3.5.0$ ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic todos-topic
+Created topic todos-topic.
+After creating topic, you can explore log file location.
+
+/tmp/kafka-logs
+       |
+     todos-topic-0
+
+when you create a topic, which is represented inside disk as "folder"
+
+todos-topic-0
+   |        | 
+ Topic Name Partition id
+....................................................................................
+		How to look at the topic structure
+.....................................................................................
+
+--describe --topic todos-topic
+
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic todos-topic
+
+
+Topic: todos-topic      TopicId: 6GPbDzT7RxyFcNYdcRRsLQ PartitionCount: 1       ReplicationFactor: 1  
+ Configs:
+      Topic: todos-topic      Partition: 0    Leader: 0       Replicas: 0     Isr: 0
+
+....................................................................................
+			How to delete the topic
+....................................................................................
+
+--delete --topic todos-topic
+
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic todos-topic
+
+once the delete command is executed, the topic is renamed rather it wont delete from the disk permanently.
+....................................................................................
+			  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
