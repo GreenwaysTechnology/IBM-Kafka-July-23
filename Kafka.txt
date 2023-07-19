@@ -1528,3 +1528,177 @@ After alertering , check the same process like above
 Topic: payment-topic    TopicId: krK_YW-aQiOm0tG2DEOxQg PartitionCount: 1       ReplicationFactor: 1    Configs: retention.ms=20000
 Topic: payment-topic    Partition: 0    Leader: 0       Replicas: 0     Isr: 0
 .....................................................................................
+				.....................................................................................
+				Partition
+.....................................................................................
+
+What is partition?
+    In order to distribute the "Storage and Processing of Events" in a topic, Kafka uses the concept called "Partition"
+	
+    The topic is made of  one or More partitions.
+
+The topic is broken into multiple partitions
+  
+  Every partion is is just folder only.
+
+  Each partition will have its own log files
+
+			   payment-topic
+				|
+		-------------------------------------------------
+		|               |              |
+	   payment-topic-0  payment-topic-1  payment-topic-2
+                |                |               |
+            log files       log files         log files
+
+
+By default every topic has only one partition.
+
+Lab:
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic sales-topic --paritions 2
+
+This command will create two partitions
+ 
+After supplying partition option you can see inside kafka-logs folder
+
+/tmp/kafka-logs
+       |
+       sales-topic-0
+       sales-topic-1
+
+How to know many partitions are there in the topic
+
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic sales-topic
+
+Topic: sales-topic   TopicId: Qld8IMqPSDqV7YMHB-dT4Q PartitionCount: 2       ReplicationFactor: 1   Configs:
+      Topic: sales-topic      Partition: 0    Leader: 0       Replicas: 0     Isr: 0
+      Topic: sales-topic      Partition: 1    Leader: 0       Replicas: 0     Isr: 0
+
+
+Why Partitions?
+
+=>Partitions helps to distribute messages into multiple log files so that we dont need to dump into one single file, we scale the message across multiple files
+=>This partition is also unit of parallelism.
+
+....................................................................................
+				Segements
+....................................................................................
+What is segment?
+  Segement is just actual log files contains "Records"
+
+Topics are broken into partions , and Partitions are broken into segements
+
+How to list segements(Log file)
+/tmp/kafka-logs/sales-topic-0$ ls -l
+total 8
+-rw-r--r-- 1 subugee subugee 10485760 Jun 15 11:34 00000000000000000000.index
+-rw-r--r-- 1 subugee subugee        0 Jun 15 11:34 00000000000000000000.log
+-rw-r--r-- 1 subugee subugee 10485756 Jun 15 11:34 00000000000000000000.timeindex
+-rw-r--r-- 1 subugee subugee        8 Jun 15 11:34 leader-epoch-checkpoint
+-rw-r--r-- 1 subugee subugee       43 Jun 15 11:34 partition.metadata
+
+Here segement is group of files
+.log
+.index
+.timeindex
+
+Segement is just log file where actual records are stored.
+
+Records are stored as "Byte Array"
+
+.log file stores actaual Records.
+
+.....................................................................................
+			 Segment File or Log File Architecture
+.....................................................................................
+
+How events or data or message is stored into segement?
+
+ The log file is structured with two parts
+
+ 1.Actual data- event
+ 2.Offset
+
+Actual data is  published into segement as "record" which is simple byte array.
+
+Offset:
+  An Offset into a file is simply the charactor location within that file,usually starting with 0; thus offset 240" is actually the 241 st byte in the file.
+
+
+ a   b  c   d  e  f  g                   =>actual record
+-------------------------------------------------------
+ 0   1  2   3  4  5  6                    =>Offset 
+--------------------------------------------------
+
+A Partition can have multiple segement meaning that i can have multile log files
+
+Multiple log files inside single folder(partition)?
+FileNames
+  000000000000000.log - segement-0
+  000000000000001.log - segement-1
+  000000000000002.log - segement-3
+
+How to represent multiple segements?
+
+Segement-0        Segment-1                Segement-2 
+Offset 0-957 =>   Offset 958 to 1675  ==>  offset 1676 --?   <==Writes
+
+Only one Segement can be active at any point in time
+
+The segement size(file size) is determined by the property
+
+log.segment.bytes
+  The maximum size of a single log file.
+  When it reaches , kafka will create new one.
+
+log.segement.ms
+  The kafka will wait before commiting(Writing data) the segement
+ default 1 week.
+
+Note:
+   A kafka broker keeps an open file handler to every active segement in every partition, even for inactive segements. This leads to a usually high number of open file handles, and the OS must be tuned accordingly.
+.....................................................................................
+Lab:
+ in order to create new log files
+
+config/server.properties
+
+log.segment.bytes=1000
+
+1.start zookeeper and kafka broker
+2.create topic with single partition
+3.Keep on publishing  messages  until it reaches 1000 bytes
+4.see the log locations /tmp/kafka-logs
+
+/tmp/kafka-logs/product-topic-0$ ls -l
+total 24
+-rw-r--r-- 1 subugee subugee        0 Jun 15 12:29 00000000000000000000.index
+-rw-r--r-- 1 subugee subugee      988 Jun 15 12:29 00000000000000000000.log
+-rw-r--r-- 1 subugee subugee       12 Jun 15 12:29 00000000000000000000.timeindex
+-rw-r--r-- 1 subugee subugee 10485760 Jun 15 12:29 00000000000000000012.index
+-rw-r--r-- 1 subugee subugee      580 Jun 15 12:29 00000000000000000012.log
+-rw-r--r-- 1 subugee subugee       56 Jun 15 12:29 00000000000000000012.snapshot
+-rw-r--r-- 1 subugee subugee 10485756 Jun 15 12:29 00000000000000000012.timeindex
+-rw-r--r-- 1 subugee subugee        8 Jun 15 12:28 leader-epoch-checkpoint
+-rw-r--r-- 1 subugee subugee       43 Jun 15 12:28 partition.metadata
+.....................................................................................
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
