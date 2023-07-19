@@ -1071,7 +1071,7 @@ Learn Kafka streams
 Learn Kafka connect
 Learn Kafka RestProxy
 ...................................................................................
-			 How to create topic via producer and publish event
+		 How to create topic via producer and publish event
 ....................................................................................
 
 Kafka provides a default feature, producer can create topic and start publishing messages.
@@ -1129,9 +1129,132 @@ CreateTime:1689682092189        I have ordered new dress
 CreateTime:1689682397605        I have ordered fruits
 
 
+Lab:
+How to start Kafka server in  -daemon mode?
+
+./bin/zookeeper-server-start.sh -daemon  config/zookeeper.properties
+./bin/kafka-server-start.sh -daemon  config/server.propertie
+.....................................................................................
+			.....................................................................................
+			Log Retention
+.....................................................................................
+
+By default , events(messages) are stored into topic, topic finally persits into log file.
+
+Can i delete events from the log file?
+ No, Kafka log messages/events are immutable - readonly.
+
+can i delete log files?
+  Yes you can delete log files.
+
+if you delete log files , you configure policies which is called as "Log Rentention Policy"
+
+Log Retention policy can be set "Broker Level" or "Topic Level"
+
+If you set policy at broker level, which is applied to all topics which are created inside broker.
+
+you can set policy at topic level, which is applied to only that topic only.
+
+Broker Level Configuration:
+...........................
+The policy can  be set to delete log file after "a period of time", or after "a given size has accumulated".
+
+Period of time :
+  I want to delete log files after 7 days, 7 months, 7 weeks, 7 years,7 mins,7 sec,7 ms
+A Given size accumulated:
+   i want to delete log files once the file size reaches 1gb
+   You have to set value in bytes
+   The value must be postive integer
+   if you set -1, meaning that no limit on size 
 
 
+Time based configuration:
+
+log.retention.hours=168 
+   By default 7 days, one week
+log.retention.minutes=10
+   mins based config
+log.rentiontion.ms=100
+    milli secs based configuration
+
+Size based configuraton
+log.retention.bytes=1073741824
+  To delete logs based on the total number of bytes it retained 
+ by default 1 gb.
+
+Topic level configuration:
+
+When we create topic or when alter topic 
+
+--config <String: name=value>            A topic configuration override for the
+                                           topic being created or altered. The
+                                           following is a list of valid
+                                           configurations:
+                                                cleanup.policy
+                                                compression.type
+                                                delete.retention.ms
+                                                file.delete.delay.ms
+                                                flush.messages
+                                                flush.ms
+                                                follower.replication.throttled.
+.....................................................................................
+
+Lab:
+Note : if any server is running, we need to stop broker using
+
+./bin/kafka-server-stop.sh
+
+or
+Press ctrl +c
+
+server.properties
+
+############################# Log Retention Policy #############################
+
+# The following configurations control the disposal of log segments. The policy can
+# be set to delete segments after a period of time, or after a given size has accumulated.
+# A segment will be deleted whenever *either* of these criteria are met. Deletion always happens
+# from the end of the log.
+
+# The minimum age of a log file to be eligible for deletion due to age
+log.retention.hours=168
+#log.retention.minutes=10
+#log.retention.ms=1000
+
+# A size-based retention policy for logs. Segments are pruned from the log unless the remaining
+# segments drop below log.retention.bytes. Functions independently of log.retention.hours.
+#log.retention.bytes=1073741824
+
+# The maximum size of a log segment file. When this size is reached a new log segment will be created.
+#log.segment.bytes=1073741824
+
+# The interval at which log segments are checked to see if they can be deleted according
+# to the retention policies
+log.retention.check.interval.ms=300000
+
+After Changing ,restart kafka server:
+
+Start Kafka Server:
+ Test after 1 min and check along with interval property, you can see log files gets deleted
+Note: only old log files get deleted , kafka starts create new log files automatically.
+
+.................................................................................
+
+Lab :
+Create topic with Retention policy:
 
 
+Lab :
+Create topic with rentension policy
+
+$./bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic hello-topic --config retention.ms=20000
+
+Produce some events
+ ./bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic hello-topic
+
+consume events
+ ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic hello-topic --from-beginning --property print.timestamp=true
+
+Wait for 2 mins and check the messages again. you can notice , messages have been log files been deleted
 
   
