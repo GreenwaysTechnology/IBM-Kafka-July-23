@@ -1794,7 +1794,7 @@ Partitioner Algorthims:
 
 Round Robin Algorthim:
   It is default algorthim used in kafka old versions less than 2.3
-Lets i assum i have two partitions
+Lets i assume i have two partitions
 
  M1 ------->P1
  M2 ------->P2
@@ -1981,8 +1981,6 @@ Partition:0     56      88343434
 Partition:0     58      343434
 Partition:0     23      42323
 Partition:1     id      2232323
-
-
 .....................................................................................
 .....................................................................................
   	How key-value pair messages are distributed to partitions
@@ -1999,6 +1997,120 @@ The keys are hashed based on an algorthim called "murmur2 "
    
 Note;
   if you have same key ,but different values, the same partition will be used
+..................................................................................
+
+Can you send events to Partitions directly?
+
+	"You can specify partition number directly in the ProducerRecord, but not with kafka-console-producer"
+..................................................................................
+				Replication
+
+
+
+We enable replication at the topic level. When a new topic is created we can specify, explicitly or through defaults, how many replicas we want.
+
+Lab:
+
+Start servers
+./bin/zookeeper-server-start.sh  config/zookeeper.properties
+./bin/kafka-server-start.sh config/server.properties
+
+create topic with replication 
+ --replication-factor Number
+
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --topic product-topic --create --partitions 2 --replication-factor 3
+Error while executing topic command : Replication factor: 3 larger than available brokers: 1.
+[2023-07-21 16:16:42,735] ERROR org.apache.kafka.common.errors.InvalidReplicationFactorException: Replication factor: 3 larger than available brokers: 1.
+ (kafka.admin.TopicCommand$)
+
+why we are getting this error?
+  Because we are running only one broker, it requires three brokers
+....................................................................................
+
+Lab: 
+ How to start kafka with KRaft Mode?
+ 
+type of broker
+1.controller - Meta data management , leader election,notification to brokers
+2.broker - Data plane - get produce req,get consumer req,replication.....
+
+
+Node -  can act as either broker or controller
+
+Node - can as as both broker and controller
+
+ node-102 - Data plane + control plan 
+
+
+1 zookeeper ---- broker  1 broker 2 broker 3
+ 
+zookeeper 1 , zookeeper 2 --- broker  1 broker 2 broker 3
+
+broker 1 broker 2 broker 3, broker 4
+  |
+controller
+
+
+broker 1 broker 2 broker 3, broker 4
+  |                  |
+controller        controller
+  |                 |
+meta data         meta data
+
+Lab: Single Kafka broker with Single Controller: Same server is going to act as broker and controller.
+
+Step:
+
+1.Generate a Cluster ID 
+ 
+Before generating cluster id, we need to know, how to use kafka-storage.sh utility.
+
+ ./bin/kafka-storage.sh --help
+usage: kafka-storage [-h] {info,format,random-uuid} ...
+
+The Kafka storage tool.
+
+positional arguments:
+  {info,format,random-uuid}
+    info                 Get information about the Kafka log directories on this node.
+    format               Format the Kafka log directories on this node.
+    random-uuid          Print a random UUID.
+
+KAFKA_CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"
+subu@LAPTOP-R2TGGFDL:~/kafka_2.13-3.5.0$ echo $KAFKA_CLUSTER_ID
+gwOzNBjXS7GAv_6qViV7QQ
+
+2.Format log directories using cluster id
+
+./bin/kafka-storage.sh format -t  $KAFKA_CLUSTER_ID -c config/kraft/server.properties
+Formatting /tmp/kraft-combined-logs with metadata.version 3.5-IV2.
+
+3.Start kafka server in Kraft mode
+./bin/kafka-server-start.sh config/kraft/server.properties
+
+4.Create simple topic and test.
+
+./bin/kafka-topics.sh --create --topic customer-topic --bootstrap-server localhost:9092
+Created topic customer-topic.
+
+./bin/kafka-topics.sh --describe --topic customer-topic --bootstrap-server localhost:9092
+Topic: customer-topic   TopicId: HfHY97dTTLi-S34JowWmHg PartitionCount: 1       ReplicationFactor: 1    Configs: segment.bytes=1073741824
+        Topic: customer-topic   Partition: 0    Leader: 1       Replicas: 1     Isr: 1
+....................................................................................
+Multi node setup with replication
+confluent platform
+ local
+ cloud
+kafka schema registry
+Kafka connect-cdc - saga 
+kafka streams-java implementation,kqldb
+				
+
+
+
+
+
+
 
 
 
