@@ -2421,6 +2421,129 @@ Step 12: produce and consume
 Now you are entering message in 9093 node, but messages are delivered via 9093 which means the data is distributed across the cluster.
 .....................................................................................
 			  Kafka Connect
-......................................................................................
+.....................................................................................
+
+Kafka Provides:
+
+1.storage layer
+  How to store events
+  Topic-partition-segmation 
+  Replication  
+2.compute layer
+
+  How to communicate Kafka Storage layer
+
+1.Producers
+2.Consumers
+
+Producers sent events to Kafka Storage
+  Can be apps,clis,devices with apps which produces and send events
+
+Consumers read events from the Kakfa Storage.
+  Can be apps,clis,devices with apps which consume events
+.....................................................................................
+
+Connect core concepts:
+
+1.Connect:
+  It is server , which performs read and write data from the data stores into kafka storage layer called broker
+
+2.Connector:
+   It is java lib /jar file which provides high level abstraction that takes care of data transfers
+
+3.Task:
+   The implementation of how data is copied to or from kafka
+
+4.Workers
+    The workers or connect are running process that execute connectors and tasks
+
+5.Converters 
+     Data Serialization and Deserialization
+
+Connectors:
+ There are two types connectors
+
+1.Source Connector
+     collect data and send into kakfa topic    
+2.Sink connectors
+     COllect data from the kafka topic and send to other systems.
+
+Implementation:
+
+ Apache Kafka with file system 
+ 
+How to move data from the file system to topic
+.....................................................................................
+				Connect implementation
+.....................................................................................
+
+Steps:
+ 1.Start zookeeper if you want 
+ 2.Start Kakfa broker with kraft mode.
+ 
+Connect Server:
+ if you want start Connect server we can start in two mode
+
+1.standalone mode
+2.distributed mode
+
+config files for connect server
+
+/config/connect-standalone.properties
+
+Basic configuration:
+
+bootstrap.servers=localhost:9092
+  This connect server is going to connect which kafka brokers
+
+key.converter=org.apache.kafka.connect.json.JsonConverter
+value.converter=org.apache.kafka.connect.json.JsonConverter
+
+  The connect will convert events into json 
+ 
+plugins:
+ list of jar files
+
+1.connect jar files
+2.any dependency jar files
+
+plugin.path=libs/connect-file-3.5.0.jar
+
+ Connect server looks the plugin.path to activate "connectors"
+
+connectors:
+ connect-file-3.5.0.jar - to read data from the disk file and transfer data into kafka topic.
+
+If you are read data from the file system, you need to have some other configuration.
+
+if you are using source connector
+
+config/connect-file-source.properties
+
+name=local-file-source
+connector.class=FileStreamSource
+tasks.max=1
+file=/home/subu/kafka_2.13-3.5.0/config/test.txt
+topic=connect-test
+
+if you are using sink connector
+
+config/connect-file-sink.properties
+
+name=local-file-sink
+connector.class=FileStreamSink
+tasks.max=1
+file=/home/subu/kafka_2.13-3.5.0/config/test.sink.txt
+topics=connect-test
+
+
+
+
+
+
+
+
+
+
 
 
