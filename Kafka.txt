@@ -2430,7 +2430,6 @@ Kafka Provides:
   Topic-partition-segmation 
   Replication  
 2.compute layer
-
   How to communicate Kafka Storage layer
 
 1.Producers
@@ -2523,7 +2522,7 @@ config/connect-file-source.properties
 name=local-file-source
 connector.class=FileStreamSource
 tasks.max=1
-file=/home/subu/kafka_2.13-3.5.0/config/test.txt
+file=test.txt
 topic=connect-test
 
 if you are using sink connector
@@ -2533,16 +2532,30 @@ config/connect-file-sink.properties
 name=local-file-sink
 connector.class=FileStreamSink
 tasks.max=1
-file=/home/subu/kafka_2.13-3.5.0/config/test.sink.txt
+file=test.sink.txt
 topics=connect-test
 
+Steps:
+
+0.create test.txt file and keep some data
+ echo -e "hello" > test.txt
+>File would have been created in the root kafka folder.
+
+1.start zookeeper / kraft
+2.start broker server
+3.start connect server
 
 
 
+1. ./bin/zookeeper-server-start.sh config/zookeeper.properties
+2 ./bin/kafka-server-start.sh config/server.properties
+3 ./bin/connect-standalone.sh config/connect-standalone.properties config/connect-file-source.properties config/connect-file-sink.properties
 
-
-
-
+Testing:
+4. ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic connect-test --from-beginning
+....................................................................................
+			  Confluent Platform
+.....................................................................................
 
 
 
